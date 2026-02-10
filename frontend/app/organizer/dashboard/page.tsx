@@ -89,38 +89,85 @@ export default function OrganizerDashboard() {
 
       {/* Quick Actions */}
       <div className="bg-white p-4 rounded shadow mb-6">
-        <h2 className="text-xl font-semibold text-gray-dark mb-4">Quick Actions</h2>
-        <div className="flex flex-wrap gap-4">
-          <button
-            className="px-4 py-2 bg-mcs-red text-mcs-light rounded hover:bg-red-700"
-            onClick={() => router.push("/organizer/events")}
-          >
-            Events Management
-          </button>
-          <button
-            className="px-4 py-2 bg-nust-blue text-white rounded hover:bg-nust-light"
-            onClick={() => router.push("/organizer/sessions")}
-          >
-            Sessions & Speakers
-          </button>
-          <button
-            className="px-4 py-2 bg-mcs-yellow text-mcs-red rounded hover:bg-yellow-400"
-            onClick={() => router.push("/organizer/tickets")}
-          >
-            Tickets & Registration
-          </button>
-          <button
-            className="px-4 py-2 bg-mcs-red text-mcs-light rounded hover:bg-red-700"
-            onClick={() => router.push("/organizer/venue")}
-          >
-            Venue Floor Plan
-          </button>
-          <button
-            className="px-4 py-2 bg-nust-light text-white rounded hover:bg-nust-blue"
-            onClick={() => router.push("/organizer/reports")}
-          >
-            Reports
-          </button>
+        <h2 className="text-xl font-semibold text-gray-dark mb-4">Management & Operations</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <p className="font-semibold text-gray-700 mb-2">📋 Core Management</p>
+            <div className="space-y-2">
+              <button
+                className="w-full px-4 py-2 bg-mcs-red text-white rounded hover:bg-red-700 text-sm font-semibold text-left"
+                onClick={() => router.push("/organizer/events")}
+              >
+                Events Management
+              </button>
+              <button
+                className="w-full px-4 py-2 bg-nust-blue text-white rounded hover:bg-blue-700 text-sm font-semibold text-left"
+                onClick={() => router.push("/organizer/sessions")}
+              >
+                Sessions & Speakers
+              </button>
+              <button
+                className="w-full px-4 py-2 bg-mcs-yellow text-mcs-red rounded hover:bg-yellow-400 text-sm font-semibold text-left"
+                onClick={() => router.push("/organizer/tickets")}
+              >
+                Tickets & Registration
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <p className="font-semibold text-gray-700 mb-2">👥 Attendees & Analytics</p>
+            <div className="space-y-2">
+              <button
+                className="w-full px-4 py-2 bg-gradient-to-r from-mcs-red to-nust-blue text-white rounded hover:opacity-90 text-sm font-semibold text-left"
+                onClick={() => router.push("/organizer/attendees")}
+              >
+                Attendees Management
+              </button>
+              <button
+                className="w-full px-4 py-2 bg-gradient-to-r from-nust-blue to-mcs-yellow text-white rounded hover:opacity-90 text-sm font-semibold text-left"
+                onClick={() => router.push("/organizer/reports")}
+              >
+                Reports & Analytics
+              </button>
+              <button
+                className="w-full px-4 py-2 bg-gradient-to-r from-mcs-yellow to-nust-light text-gray-800 rounded hover:opacity-90 text-sm font-semibold text-left"
+                onClick={() => router.push("/organizer/badges")}
+              >
+                Badge Designer
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <p className="font-semibold text-gray-700 mb-2">🤖 AI Features</p>
+            <div className="space-y-2">
+              <button
+                className="w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm font-semibold text-left"
+                onClick={() => router.push("/organizer/ai/matching")}
+              >
+                AI Matching
+              </button>
+              <button
+                className="w-full px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm font-semibold text-left"
+                onClick={() => router.push("/organizer/ai/agenda")}
+              >
+                Personalized Agendas
+              </button>
+              <button
+                className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm font-semibold text-left"
+                onClick={() => router.push("/organizer/ai/chatbot")}
+              >
+                Chatbot Management
+              </button>
+              <button
+                className="w-full px-4 py-2 bg-cyan-600 text-white rounded hover:bg-cyan-700 text-sm font-semibold text-left"
+                onClick={() => router.push("/organizer/ai/recommendations")}
+              >
+                Recommendations & Trending
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 

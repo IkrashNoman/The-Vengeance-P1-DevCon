@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { apiService } from "@/lib/apiService";
+import axios from "axios";
 
 const features = [
   { title: "AI Networking", desc: "Connect with like-minded participants easily." },
@@ -28,7 +30,10 @@ export default function LandingPage() {
   const [userType, setUserType] = useState<"attendee" | "organizer">("attendee");
   const [formData, setFormData] = useState({ username: "", email: "", password: "", confirmPassword: "" });
   const [otp, setOtp] = useState("");
-const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [backendStatus, setBackendStatus] = useState<"checking" | "connected" | "error">("checking");
+  const [loading, setLoading] = useState(false);
+
 const imageWidth = 300; // width of each image
 const gap = 16; // gap between images (tailwind `gap-4` = 16px)
 const visibleCount = 2; // show 2 images at a time
@@ -38,6 +43,23 @@ const visibleCount = 2; // show 2 images at a time
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Check backend health on component mount
+  useEffect(() => {
+    checkBackendHealth();
+  }, []);
+
+  const checkBackendHealth = async () => {
+    try {
+      const response = await axios.get("http://127.0.0.1:8000/api/auth/", {
+        timeout: 5000,
+      });
+      setBackendStatus("connected");
+    } catch (error) {
+      setBackendStatus("error");
+      console.error("Backend not reachable:", error);
+    }
+  };
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
@@ -49,13 +71,48 @@ const visibleCount = 2; // show 2 images at a time
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSignIn = () => {
+  const handleSignIn = async () => {
+    if (backendStatus === "error") {
+      alert("Backend server is not running. Please start the backend server first.");
+      return;
+    }
+
     const { username, password } = formData;
-    if (username === "mcsAdmin" && password === "mcsAdmin") router.push("/admin/dashboard");
-    else if (username === "Ali" && password === "ali") router.push("/organizer/dashboard");
-    else if (username === "Akrash" && password === "Akrash") router.push("/attendee");
-    else if (username === "staff" && password === "staff") router.push("/staff");
-    else setModalType("signin");
+    
+    // Demo credentials for hardcoded navigation
+    if (username === "mcsAdmin" && password === "mcsAdmin") {
+      router.push("/admin/dashboard");
+      return;
+    } else if (username === "Ali" && password === "ali") {
+      router.push("/organizer/dashboard");
+      return;
+    } else if (username === "Akrash" && password === "Akrash") {
+      router.push("/attendee");
+      return;
+    } else if (username === "staff" && password === "staff") {
+      router.push("/staff");
+      return;
+    }
+
+    // Try API authentication
+    setLoading(true);
+    try {
+      const response = await apiService.login(username, password);
+      if (response.access) {
+        // Route based on user type
+        if (userType === "organizer") {
+          router.push("/organizer/dashboard");
+        } else {
+          router.push("/attendee");
+        }
+        closeModal();
+      }
+    } catch (error: any) {
+      alert(error.response?.data?.detail || "Login failed. Check your credentials.");
+      console.error("Login error:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSignUp = () => setModalType("otp");
@@ -74,7 +131,17 @@ const visibleCount = 2; // show 2 images at a time
             <Image src="/mcs-logo.png" alt="MCS Logo" width={50} height={50} />
             <h1 className="text-2xl font-bold ml-4">MCS Olympiad</h1>
           </div>
-          <div className="space-x-4">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <div className={`w-3 h-3 rounded-full ${
+                backendStatus === "connected" ? "bg-green-400" :
+                backendStatus === "error" ? "bg-red-400" : "bg-yellow-400"
+              }`}></div>
+              <span className="text-xs">
+                {backendStatus === "connected" ? "Backend OK" :
+                 backendStatus === "error" ? "Backend Error" : "Checking..."}
+              </span>
+            </div>
             <button onClick={openSignIn} className="px-4 py-2 bg-mcs-yellow text-mcs-red font-semibold rounded hover:bg-yellow-400">Sign In</button>
             <button onClick={openSignUp} className="px-4 py-2 border border-mcs-yellow text-mcs-yellow rounded hover:bg-mcs-yellow hover:text-mcs-red">Sign Up</button>
           </div>
@@ -89,9 +156,19 @@ const visibleCount = 2; // show 2 images at a time
             {modalType === "signin" && (
               <>
                 <h2 className="text-2xl font-bold mb-4 text-mcs-red text-center">Sign In</h2>
-                <input name="username" placeholder="Username" value={formData.username} onChange={handleChange} className="w-full p-3 rounded border mb-3 focus:outline-none focus:ring-2 focus:ring-mcs-red" />
-                <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} className="w-full p-3 rounded border mb-3 focus:outline-none focus:ring-2 focus:ring-mcs-red" />
-                <button onClick={handleSignIn} className="w-full bg-mcs-red text-mcs-light p-3 rounded font-semibold hover:bg-red-700">Sign In</button>
+                {backendStatus === "error" && (
+                  <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                    Backend server is not running. Please ensure the Django server is started on port 8000.
+                  </div>
+                )}
+                <input name="username" placeholder="Username" value={formData.username} onChange={handleChange} disabled={loading} className="w-full p-3 rounded border mb-3 focus:outline-none focus:ring-2 focus:ring-mcs-red disabled:bg-gray-100" />
+                <input type="password" name="password" placeholder="Password" value={formData.password} onChange={handleChange} disabled={loading} className="w-full p-3 rounded border mb-3 focus:outline-none focus:ring-2 focus:ring-mcs-red disabled:bg-gray-100" />
+                <button onClick={handleSignIn} disabled={loading} className="w-full bg-mcs-red text-mcs-light p-3 rounded font-semibold hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                  {loading ? "Signing In..." : "Sign In"}
+                </button>
+                <div className="mt-3 text-xs text-gray-600 text-center">
+                  Demo: Ali/ali or Akrash/Akrash or mcsAdmin/mcsAdmin
+                </div>
               </>
             )}
 
