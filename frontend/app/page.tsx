@@ -52,7 +52,7 @@ const visibleCount = 2; // show 2 images at a time
   const handleSignIn = () => {
     const { username, password } = formData;
     if (username === "mcsAdmin" && password === "mcsAdmin") router.push("/admin/dashboard");
-    else if (username === "Ali" && password === "ali") router.push("/organizer");
+    else if (username === "Ali" && password === "ali") router.push("/organizer/dashboard");
     else if (username === "Akrash" && password === "Akrash") router.push("/attendee");
     else if (username === "staff" && password === "staff") router.push("/staff");
     else setModalType("signin");
