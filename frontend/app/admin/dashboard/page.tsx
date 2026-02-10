@@ -46,8 +46,8 @@ export default function AdminDashboard() {
       <main className="p-6">
         <section className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
           <button className="p-4 bg-mcs-light rounded shadow hover:shadow-lg font-semibold" onClick={() => router.push('/admin/events')}>Event Management</button>
-            <button className="p-4 bg-mcs-light rounded shadow hover:shadow-lg font-semibold">Manage Sessions</button>
-          <button className="p-4 bg-mcs-light rounded shadow hover:shadow-lg font-semibold">Manage Attendees</button>
+            <button className="p-4 bg-mcs-light rounded shadow hover:shadow-lg font-semibold" onClick={() => router.push('/admin/sessions')}>Manage Sessions</button>
+          <button className="p-4 bg-mcs-light rounded shadow hover:shadow-lg font-semibold" onClick={() => router.push('/admin/attendees')}>Manage Attendees</button>
           <button className="p-4 bg-mcs-light rounded shadow hover:shadow-lg font-semibold">Generate Reports</button>
         </section>
 
