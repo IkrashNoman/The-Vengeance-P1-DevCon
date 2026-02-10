@@ -40,7 +40,7 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gray-100 font-sans text-gray-800">
       <header className="bg-mcs-red text-mcs-light p-6 shadow-md flex justify-between items-center">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <button className="px-4 py-2 bg-mcs-yellow text-mcs-red font-semibold rounded hover:bg-yellow-400">Logout</button>
+        <button className="px-4 py-2 bg-mcs-yellow text-mcs-red font-semibold rounded hover:bg-yellow-400"onClick={() => router.push('/')}>Logout</button>
       </header>
 
       <main className="p-6">
