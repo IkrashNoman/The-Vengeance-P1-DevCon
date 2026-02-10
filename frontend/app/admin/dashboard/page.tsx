@@ -44,12 +44,14 @@ export default function AdminDashboard() {
       </header>
 
       <main className="p-6">
-        <section className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-          <button className="p-4 bg-mcs-light rounded shadow hover:shadow-lg font-semibold" onClick={() => router.push('/admin/events')}>Event Management</button>
+        <section className="mb-6 grid grid-cols-1 md:grid-cols-5 gap-4">
+            <button className="p-4 bg-mcs-light rounded shadow hover:shadow-lg font-semibold" onClick={() => router.push('/admin/events')}>Event Management</button>
             <button className="p-4 bg-mcs-light rounded shadow hover:shadow-lg font-semibold" onClick={() => router.push('/admin/sessions')}>Manage Sessions</button>
-          <button className="p-4 bg-mcs-light rounded shadow hover:shadow-lg font-semibold" onClick={() => router.push('/admin/attendees')}>Manage Attendees</button>
-          <button className="p-4 bg-mcs-light rounded shadow hover:shadow-lg font-semibold">Generate Reports</button>
+            <button className="p-4 bg-mcs-light rounded shadow hover:shadow-lg font-semibold" onClick={() => router.push('/admin/attendees')}>Manage Attendees</button>
+            <button className="p-4 bg-mcs-light rounded shadow hover:shadow-lg font-semibold" onClick={() => router.push('/admin/tickets')}>Tickets & Payments</button>
+            <button className="p-4 bg-mcs-light rounded shadow hover:shadow-lg font-semibold" onClick={() => router.push('/admin/reports')}>Generate Reports</button>
         </section>
+
 
         <section className="mb-6 bg-white p-4 rounded shadow">
           <h2 className="text-xl font-bold mb-3 text-mcs-red">Notifications</h2>
