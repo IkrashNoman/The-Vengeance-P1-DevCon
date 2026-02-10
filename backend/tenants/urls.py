@@ -1,6 +1,11 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import TenantViewSet
+
+router = DefaultRouter()
+router.register(r'', TenantViewSet, basename='tenant')
 
 urlpatterns = [
-    # Tenant endpoints will be added later.
+    path('', include(router.urls)),
 ]
 

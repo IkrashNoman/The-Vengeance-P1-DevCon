@@ -177,3 +177,31 @@ class EventSession(models.Model):
 
     def __str__(self):
         return f"{self.event.name} - {self.name}"
+
+
+class TicketType(models.Model):
+    """
+    Ticket types and pricing for events.
+    """
+
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        related_name='ticket_types'
+    )
+    
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity_available = models.IntegerField()
+    quantity_sold = models.IntegerField(default=0)
+    
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['price']
+
+    def __str__(self):
+        return f"{self.event.name} - {self.name}"

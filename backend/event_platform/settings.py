@@ -68,6 +68,8 @@ INSTALLED_APPS = [
     'interactions',
     'notifications',
     'analytics',
+    # Admin API for dashboard endpoints
+    'admin_api',
 ]
 
 MIDDLEWARE = [

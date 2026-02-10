@@ -1,6 +1,12 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import NotificationTemplateViewSet, NotificationViewSet
+
+router = DefaultRouter()
+router.register(r'templates', NotificationTemplateViewSet, basename='notification-template')
+router.register(r'', NotificationViewSet, basename='notification')
 
 urlpatterns = [
-    # Notification endpoints will be added later.
+    path('', include(router.urls)),
 ]
 

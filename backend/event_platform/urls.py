@@ -36,4 +36,6 @@ urlpatterns = [
     path('api/interactions/', include('interactions.urls')),
     path('api/notifications/', include('notifications.urls')),
     path('api/analytics/', include('analytics.urls')),
+    # Admin dashboard API
+    path('api/admin/', include('admin_api.urls')),
 ]
