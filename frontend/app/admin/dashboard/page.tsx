@@ -40,16 +40,18 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-gray-100 font-sans text-gray-800">
       <header className="bg-mcs-red text-mcs-light p-6 shadow-md flex justify-between items-center">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <button className="px-4 py-2 bg-mcs-yellow text-mcs-red font-semibold rounded hover:bg-yellow-400">Logout</button>
+        <button className="px-4 py-2 bg-mcs-yellow text-mcs-red font-semibold rounded hover:bg-yellow-400"onClick={() => router.push('/')}>Logout</button>
       </header>
 
       <main className="p-6">
-        <section className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-          <button className="p-4 bg-mcs-light rounded shadow hover:shadow-lg font-semibold" onClick={() => router.push('/admin/events')}>Event Management</button>
+        <section className="mb-6 grid grid-cols-1 md:grid-cols-5 gap-4">
+            <button className="p-4 bg-mcs-light rounded shadow hover:shadow-lg font-semibold" onClick={() => router.push('/admin/events')}>Event Management</button>
             <button className="p-4 bg-mcs-light rounded shadow hover:shadow-lg font-semibold" onClick={() => router.push('/admin/sessions')}>Manage Sessions</button>
-          <button className="p-4 bg-mcs-light rounded shadow hover:shadow-lg font-semibold" onClick={() => router.push('/admin/attendees')}>Manage Attendees</button>
-          <button className="p-4 bg-mcs-light rounded shadow hover:shadow-lg font-semibold">Generate Reports</button>
+            <button className="p-4 bg-mcs-light rounded shadow hover:shadow-lg font-semibold" onClick={() => router.push('/admin/attendees')}>Manage Attendees</button>
+            <button className="p-4 bg-mcs-light rounded shadow hover:shadow-lg font-semibold" onClick={() => router.push('/admin/tickets')}>Tickets & Payments</button>
+            <button className="p-4 bg-mcs-light rounded shadow hover:shadow-lg font-semibold" onClick={() => router.push('/admin/reports')}>Generate Reports</button>
         </section>
+
 
         <section className="mb-6 bg-white p-4 rounded shadow">
           <h2 className="text-xl font-bold mb-3 text-mcs-red">Notifications</h2>
