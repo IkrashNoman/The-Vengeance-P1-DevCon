@@ -7,10 +7,14 @@ from django.db.models import Sum, Count
 from django.db.models.functions import TruncDate
 from django.utils.dateformat import DateFormat
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from django.http import HttpResponse
+import csv
 
 from events.models import Event, EventSession, EventAttendance, TicketType
 from registrations.models import Registration
 from notifications.models import Notification
+from accounts.models import User
 
 
 class AdminEventsView(APIView):
@@ -348,3 +352,210 @@ class AdminSessionAttendeeViewSet(viewsets.ViewSet):
             })
 
         return Response(attendees)
+
+
+class QRCheckInView(APIView):
+    """PUT /api/admin/events/:eventId/attendees/:attendeeId/checkin - Handle QR check-in"""
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, event_id=None, attendee_id=None):
+        """Handle QR code check-in"""
+        user = request.user
+        
+        # Get event and validate permissions
+        event = get_object_or_404(Event, id=event_id)
+        if not user.is_super_admin() and event.tenant != user.tenant:
+            return Response(
+                {'success': False, 'message': 'Permission denied'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Get or create attendance record
+        try:
+            attendance = EventAttendance.objects.get(event=event, user_id=attendee_id)
+        except EventAttendance.DoesNotExist:
+            return Response(
+                {'success': False, 'message': 'Attendee not found for this event'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Update check-in status
+        checked_in = request.data.get('checkedIn', True)
+        
+        if checked_in:
+            attendance.status = 'checked_in'
+            attendance.check_in_time = timezone.now()
+            attendance.check_in_method = 'qr'
+        else:
+            attendance.status = 'registered'
+            attendance.check_in_time = None
+            attendance.check_in_method = None
+        
+        attendance.save()
+        
+        return Response(
+            {
+                'success': True,
+                'message': 'Attendee check-in updated successfully',
+                'data': {
+                    'attendeeId': attendance.user.id,
+                    'eventId': event.id,
+                    'status': attendance.status,
+                    'checkInTime': attendance.check_in_time.isoformat() if attendance.check_in_time else None
+                }
+            },
+            status=status.HTTP_200_OK
+        )
+
+
+class TicketsView(APIView):
+    """Handle ticket endpoints for events"""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, event_id=None):
+        """GET /api/admin/events/:eventId/tickets - Get all tickets for an event"""
+        user = request.user
+        event = get_object_or_404(Event, id=event_id)
+        
+        if not user.is_super_admin() and event.tenant != user.tenant:
+            return Response(
+                {'success': False, 'message': 'Permission denied'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        tickets = []
+        for ticket in event.ticket_types.all():
+            tickets.append({
+                'id': ticket.id,
+                'type': ticket.name,
+                'price': float(ticket.price),
+                'earlyBirdPrice': float(ticket.early_bird_price) if ticket.early_bird_price else None,
+                'groupDiscount': ticket.group_discount or '',
+                'sold': ticket.quantity_sold,
+                'revenue': ticket.revenue,
+            })
+        
+        return Response({
+            'eventId': event.id,
+            'tickets': tickets
+        }, status=status.HTTP_200_OK)
+
+    def post(self, request, event_id=None):
+        """POST /api/events/:eventId/tickets - Create or update tickets for an event"""
+        user = request.user
+        event = get_object_or_404(Event, id=event_id)
+        
+        if not user.is_super_admin() and event.tenant != user.tenant:
+            return Response(
+                {'success': False, 'message': 'Permission denied'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        tickets_data = request.data if isinstance(request.data, list) else request.data.get('tickets', [])
+        created_tickets = []
+        
+        for ticket_info in tickets_data:
+            ticket = TicketType.objects.create(
+                event=event,
+                name=ticket_info.get('type'),
+                price=ticket_info.get('price', 0),
+                early_bird_price=ticket_info.get('earlyBirdPrice'),
+                group_discount=ticket_info.get('groupDiscount', ''),
+                quantity_available=ticket_info.get('quantity', 100),
+                quantity_sold=ticket_info.get('sold', 0),
+            )
+            created_tickets.append({
+                'id': ticket.id,
+                'type': ticket.name,
+                'price': float(ticket.price),
+                'earlyBirdPrice': float(ticket.early_bird_price) if ticket.early_bird_price else None,
+                'groupDiscount': ticket.group_discount,
+                'sold': ticket.quantity_sold,
+                'revenue': ticket.revenue,
+            })
+        
+        return Response({
+            'success': True,
+            'message': 'Tickets updated successfully',
+            'tickets': created_tickets
+        }, status=status.HTTP_201_CREATED)
+
+
+class TicketDetailView(APIView):
+    """PUT /api/admin/events/:eventId/tickets/:ticketId - Update ticket prices"""
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, event_id=None, ticket_id=None):
+        """Update ticket pricing and discount information"""
+        user = request.user
+        
+        # Get event and validate permissions
+        event = get_object_or_404(Event, id=event_id)
+        if not user.is_super_admin() and event.tenant != user.tenant:
+            return Response(
+                {'success': False, 'message': 'Permission denied'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Get ticket
+        ticket = get_object_or_404(TicketType, id=ticket_id, event=event)
+        
+        # Update fields
+        if 'price' in request.data:
+            ticket.price = request.data.get('price')
+        if 'earlyBirdPrice' in request.data:
+            ticket.early_bird_price = request.data.get('earlyBirdPrice')
+        if 'groupDiscount' in request.data:
+            ticket.group_discount = request.data.get('groupDiscount')
+        
+        ticket.save()
+        
+        return Response({
+            'success': True,
+            'message': 'Ticket updated successfully',
+            'ticket': {
+                'id': ticket.id,
+                'type': ticket.name,
+                'price': float(ticket.price),
+                'earlyBirdPrice': float(ticket.early_bird_price) if ticket.early_bird_price else None,
+                'groupDiscount': ticket.group_discount,
+                'sold': ticket.quantity_sold,
+                'revenue': ticket.revenue,
+            }
+        }, status=status.HTTP_200_OK)
+
+
+class TicketExportView(APIView):
+    """GET /api/admin/events/:eventId/tickets/export - Export tickets to CSV"""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, event_id=None):
+        """Export event tickets to CSV"""
+        user = request.user
+        event = get_object_or_404(Event, id=event_id)
+        
+        if not user.is_super_admin() and event.tenant != user.tenant:
+            return Response(
+                {'success': False, 'message': 'Permission denied'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Create CSV response
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="event_{event_id}_tickets.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow(['Ticket ID', 'Type', 'Price', 'Early Bird Price', 'Group Discount', 'Sold', 'Revenue'])
+        
+        for ticket in event.ticket_types.all():
+            writer.writerow([
+                ticket.id,
+                ticket.name,
+                float(ticket.price),
+                float(ticket.early_bird_price) if ticket.early_bird_price else '',
+                ticket.group_discount,
+                ticket.quantity_sold,
+                ticket.revenue,
+            ])
+        
+        return response

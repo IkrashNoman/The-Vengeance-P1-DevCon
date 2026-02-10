@@ -193,6 +193,8 @@ class TicketType(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    early_bird_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    group_discount = models.CharField(max_length=255, blank=True, help_text="e.g., '10% for 5+'")
     quantity_available = models.IntegerField()
     quantity_sold = models.IntegerField(default=0)
     
@@ -205,3 +207,8 @@ class TicketType(models.Model):
 
     def __str__(self):
         return f"{self.event.name} - {self.name}"
+    
+    @property
+    def revenue(self):
+        """Calculate total revenue for this ticket type"""
+        return float(self.price * self.quantity_sold)
